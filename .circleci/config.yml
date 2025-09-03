@@ -4,16 +4,16 @@ jobs:
   build:
     docker:
       - image: circleci/node:13.12.0
-    working_directory: ~/haribol/uzoeddie/react-projects/react-cinema-app-m
+    working_directory: ~/repo
     steps:
       - checkout
       - run:
           name: Show current branch
           command: echo ${CURRENT_BRANCH}
       - restore_cache:
-        key: 
-          - app-{{ checksum "package.json" }}    
-          - app-
+          keys:
+            - app-{{ checksum "package.json" }}    
+            - app-
       - run:
           name: Install dependencies
           command: npm install 
@@ -21,4 +21,8 @@ jobs:
           key: app-{{ checksum "package.json" }}
           paths:
             - node_modules
-
+  workflows:
+    version: 2
+    build_and_test:
+      jobs:
+        - build
