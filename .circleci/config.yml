@@ -4,7 +4,7 @@ jobs:
   build:
     docker:
       - image: circleci/node:13.12.0
-    working_directory: ~/repo
+    working_directory: ~/haribol/uzoeddie/react-projects/react-cinema-app-m
     steps:
       - checkout
       - run:
@@ -21,4 +21,4 @@ jobs:
           key: app-{{ checksum "package.json" }}
           paths:
             - node_modules
-                   
+
