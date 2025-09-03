@@ -63,11 +63,6 @@ jobs:
             npm install
             npm run build
             echo "Build Successful"
-          name: Build Project
-          command: |
-            npm install
-            npm run build
-            echo "Build Successful"
       - run:
           name: Deploy to AWS S3
           command: |
