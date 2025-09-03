@@ -5,49 +5,76 @@ jobs:
     docker:
       - image: circleci/node:13.12.0
     working_directory: ~/repo
+
     steps:
       - checkout
+
       - run:
           name: Show current branch
-          command: echo ${CURRENT_BRANCH}
+          command: echo ${CIRCLE_BRANCH}
+
       - restore_cache:
           keys:
-            - app-{{ checksum "package.json" }}    
+            - app-{{ checksum "package.json" }}
             - app-
+
       - run:
           name: Install dependencies
-          command: npm install 
+          command: npm install
+
       - save_cache:
           key: app-{{ checksum "package.json" }}
           paths:
             - node_modules
 
+      - run:
+          name: Build project
+          command: npm run build
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - build
+
   deploy-to-aws-s3:
     docker:
       - image: circleci/node:13.12.0
     working_directory: ~/repo
+
     steps:
       - checkout
+
+      - attach_workspace:
+          at: .
+
       - run:
           name: Show current branch
-          command: echo ${CURRENT_BRANCH} 
+          command: echo ${CIRCLE_BRANCH}
+
       - run:
-          name: Installing awscli
+          name: Install AWS CLI
           working_directory: /
-          command: |    
+          command: |
             sudo apt-get update
             sudo apt-get install -y awscli
-            sudo apt-get install -y python-pip python-dev build-essential
-      - run:
-          name: Build Project
-          command: |
-            npm install
-            npm run build
-            cd build
-            zip ../build.zip -r * .[^.]*
-            echo "Build Successful"
+
       - run:
           name: Deploy to AWS S3
           command: |
-            aws --region ${AWS_REGION} s3 sync ~/repo/build s3://${AWS_BUCKET_NAME} --delete --exact-timestamps
+            aws s3 sync build/ s3://${AWS_BUCKET_NAME} \
+              --region ${AWS_REGION} \
+              --delete \
+              --exact-timestamps
             echo "Deployment to AWS S3 Successful"
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - build
+      - deploy-to-aws-s3:
+          requires:
+            - build
+          filters:
+            branches:
+              only: develop  # ✅ Change or remove this if you want to deploy from other branches
