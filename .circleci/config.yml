@@ -46,3 +46,8 @@ jobs:
             cd build
             zip ../build.zip -r * .[^.]*
             echo "Build Successful"
+      - run:
+          name: Deploy to AWS S3
+          command: |
+            aws --region ${AWS_REGION} s3 sync ~/repo/build s3://${AWS_BUCKET_NAME} --delete --exact-timestamps
+            echo "Deployment to AWS S3 Successful"
